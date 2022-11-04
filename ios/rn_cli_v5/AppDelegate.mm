@@ -45,12 +45,12 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
   bridge.surfacePresenter = _bridgeAdapter.surfacePresenter;
 #endif
 
-- (BOOL)application:(UIApplication *)application
-   openURL:(NSURL *)url
-   options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
-{
-  return [RCTLinkingManager application:application openURL:url options:options];
-}
+// - (BOOL)application:(UIApplication *)application
+//    openURL:(NSURL *)url
+//    options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+// {
+//   return [RCTLinkingManager application:application openURL:url options:options];
+// }
 
   NSDictionary *initProps = [self prepareInitialProps];
   UIView *rootView = RCTAppSetupDefaultRootView(bridge, @"rn_cli_v5", initProps);
