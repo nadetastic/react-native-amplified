@@ -203,6 +203,9 @@ const App: () => Node = () => {
     }
   }
 
+  // Social Sign-in (OAuth)
+  // TODO: Add social sign in
+
   // Multi-factor authentication
   async function setupTOTP(user = null) {
     user = await Auth.currentAuthenticatedUser();
@@ -376,6 +379,15 @@ const App: () => Node = () => {
       attributeUpdateCode,
     );
     console.log(result);
+  }
+
+  async function deleteUser() {
+    try {
+      const result = await Auth.deleteUser();
+      console.log(result);
+    } catch (error) {
+      console.log('Error deleting user', error);
+    }
   }
 
   return (
@@ -572,6 +584,7 @@ const App: () => Node = () => {
               placeholder="Attribute Update Code"
             />
             <Button onPress={confirmAttributeCode} title="Confirm Code" />
+            <Button onPress={deleteUser} title="Delete Current User" />
           </Section>
         </View>
       </ScrollView>
