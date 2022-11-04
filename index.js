@@ -8,7 +8,7 @@ import {name as appName} from './app.json';
 
 import {Amplify} from 'aws-amplify';
 import awsconfig from './src/aws-exports';
-Amplify.configure(awsconfig);
+// Amplify.configure(awsconfig);
 
 // const isLocalhost = Boolean(
 //   window.location.hostname === 'localhost' ||
@@ -19,27 +19,28 @@ Amplify.configure(awsconfig);
 //       /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/,
 //     ),
 // );
+const isLocalhost = false;
 
-// // Assuming you have two redirect URIs, and the first is for localhost and second is for production
-// const [localRedirectSignIn, productionRedirectSignIn] =
-//   awsconfig.oauth.redirectSignIn.split(',');
+// Assuming you have two redirect URIs, and the first is for localhost and second is for production
+const [localRedirectSignIn, productionRedirectSignIn] =
+  awsconfig.oauth.redirectSignIn.split(',');
 
-// const [localRedirectSignOut, productionRedirectSignOut] =
-//   awsconfig.oauth.redirectSignOut.split(',');
+const [localRedirectSignOut, productionRedirectSignOut] =
+  awsconfig.oauth.redirectSignOut.split(',');
 
-// const updatedAwsConfig = {
-//   ...awsconfig,
-//   oauth: {
-//     ...awsconfig.oauth,
-//     redirectSignIn: isLocalhost
-//       ? localRedirectSignIn
-//       : productionRedirectSignIn,
-//     redirectSignOut: isLocalhost
-//       ? localRedirectSignOut
-//       : productionRedirectSignOut,
-//   },
-// };
+const updatedAwsConfig = {
+  ...awsconfig,
+  oauth: {
+    ...awsconfig.oauth,
+    redirectSignIn: isLocalhost
+      ? localRedirectSignIn
+      : productionRedirectSignIn,
+    redirectSignOut: isLocalhost
+      ? localRedirectSignOut
+      : productionRedirectSignOut,
+  },
+};
 
-// Amplify.configure(updatedAwsConfig);
+Amplify.configure(updatedAwsConfig);
 
 AppRegistry.registerComponent(appName, () => App);
