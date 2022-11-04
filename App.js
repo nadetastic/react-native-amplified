@@ -22,6 +22,7 @@ import {
 
 import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
+import QRCode from 'react-native-qrcode-svg';
 import {Auth, Hub} from 'aws-amplify';
 
 /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
@@ -53,6 +54,9 @@ const App: () => Node = () => {
 
   useEffect(() => {
     listenToAutoSignInEvent();
+    Auth.currentAuthenticatedUser()
+      .then(user => setStoredUser(user))
+      .catch(err => console.log(err));
   }, []);
 
   const [username, setUsername] = useState('');
@@ -61,6 +65,20 @@ const App: () => Node = () => {
   const [phone_number, setPhoneNumber] = useState('');
   const [code, setCode] = useState('');
   const [storedUser, setStoredUser] = useState(null);
+  const [totpCode, setTotpCode] = useState();
+  const [challengeAnswer, setChallengeAnswer] = useState();
+  const [preferredMFA, setPreferredMFA] = useState();
+  const [challengeName, setChallengeName] = useState();
+  const [totpChallengeAnswer, setTotpChallengeAnswer] = useState();
+  const [newPassword, setNewPassword] = useState();
+  const [validationData, setValidationData] = useState();
+  const [newForgottenPassword, setNewForgottenPassword] = useState();
+  const [forgottenPasswordCode, setForgottenPasswordCode] = useState();
+  const [verificationCode, setVerificationCode] = useState();
+  const [userAttributes, setUserAttributes] = useState();
+  const [favoriteFlavor, setFavoriteFlavor] = useState();
+  const [newEmail, setNewEmail] = useState();
+  const [attributeUpdateCode, setAttributeUpdateCode] = useState();
 
   async function signUp() {
     console.log(username);
@@ -88,6 +106,7 @@ const App: () => Node = () => {
     }
   }
 
+  // Sign up, Sign in & Sign out
   function listenToAutoSignInEvent() {
     Hub.listen('auth', ({payload}) => {
       const {event} = payload;
@@ -124,7 +143,43 @@ const App: () => Node = () => {
   async function signIn() {
     try {
       const user = await Auth.signIn(username, password);
-      setStoredUser(user);
+      setChallengeName(user.challengeName);
+      if (
+        user.challengeName === 'SMS_MFA' ||
+        user.challengeName === 'SOFTWARE_TOKEN_MFA'
+      ) {
+        const loggedUser = await Auth.confirmSignIn(
+          user,
+          totpChallengeAnswer,
+          challengeName,
+        );
+        console.log(loggedUser);
+        setStoredUser(loggedUser);
+      } else if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
+        const {requiredAttributes} = user.challengeParam; // the array of required attributes, e.g ['email', 'phone_number']
+        // You need to get the new password and required attributes from the UI inputs
+        // and then trigger the following function with a button click
+        // For example, the email and phone_number are required attributes
+        const loggedUser = await Auth.completeNewPassword(
+          user, // the Cognito User Object
+          newPassword, // the new password
+          // OPTIONAL, the required attributes
+          {
+            email,
+            phone_number,
+          },
+        );
+        setStoredUser(loggedUser);
+      } else if (user.challengeName === 'MFA_SETUP') {
+        // This happens when the MFA method is TOTP
+        // The user needs to setup the TOTP before using it
+        // More info please check the Enabling MFA part
+        setupTOTP(user);
+      } else {
+        // The user directly signs in
+        console.log(user);
+        setStoredUser(user);
+      }
     } catch (error) {
       console.log('error signing in', error);
     }
@@ -146,6 +201,181 @@ const App: () => Node = () => {
     } catch (error) {
       console.log('error signing out globally: ', error);
     }
+  }
+
+  // Multi-factor authentication
+  async function setupTOTP(user = null) {
+    user = await Auth.currentAuthenticatedUser();
+    Auth.setupTOTP(user)
+      .then(tempCode => {
+        console.log(tempCode);
+        setTotpCode(tempCode);
+      })
+      .catch(e => {
+        console.log('error setting up TOTP: ', e);
+      });
+  }
+
+  async function verifyTOTP() {
+    Auth.verifyTotpToken(storedUser, challengeAnswer)
+      .then(() => {
+        // don't forget to set TOTP as the preferred MFA method
+        Auth.setPreferredMFA(storedUser, 'TOTP');
+        console.log('verified TOTP');
+      })
+      .catch(e => {
+        // Token is not verified
+        console.log('error verifying TOTP: ', e);
+      });
+  }
+
+  async function setPreferredTOTP() {
+    console.log('setting preferred TOTP');
+    Auth.setPreferredMFA(storedUser, 'TOTP')
+      .then(data => {
+        console.log(data);
+      })
+      .catch(e => {
+        console.log('error setting preferred TOTP: ', e);
+      });
+  }
+
+  async function setPreferredSMS() {
+    console.log('setting preferred SMS');
+    Auth.setPreferredMFA(storedUser, 'SMS')
+      .then(data => {
+        console.log(data);
+      })
+      .catch(e => {
+        console.log('error setting preferred SMS: ', e);
+      });
+  }
+
+  async function setPreferredNoMFA() {
+    console.log('setting preferred No MFA');
+    Auth.setPreferredMFA(storedUser, 'NOMFA')
+      .then(data => {
+        console.log(data);
+      })
+      .catch(e => {
+        console.log('error setting preferred No MFA: ', e);
+      });
+  }
+
+  async function getPreferred() {
+    // Will retrieve the current mfa type from cache
+    Auth.getPreferredMFA(storedUser, {
+      // Optional, by default is false.
+      // If set to true, it will get the MFA type from server side instead of from local cache.
+      bypassCache: false,
+    })
+      .then(data => {
+        console.log('Current preferred MFA type is: ' + data);
+        setPreferredMFA(data);
+      })
+      .catch(e => {
+        console.log('error getting preferred MFA: ', e);
+      });
+  }
+
+  async function customValidationData() {
+    try {
+      const user = await Auth.signIn({
+        username, // Required, the username
+        password, // Optional, the password
+        validationData, // Optional, an arbitrary key-value pair map which can contain any key and will be passed to your PreAuthentication Lambda trigger as-is. It can be used to implement additional validations around authentication
+      });
+      console.log('user is signed in!', user);
+    } catch (error) {
+      console.log('error signing in:', error);
+    }
+  }
+
+  // Password & User Management
+  async function changePassword() {
+    Auth.currentAuthenticatedUser()
+      .then(user => {
+        return Auth.changePassword(user, password, newPassword);
+      })
+      .then(data => console.log(data))
+      .catch(err => console.log(err));
+  }
+
+  async function forgotPassword() {
+    Auth.forgotPassword(username)
+      .then(data => console.log(data))
+      .catch(err => console.log(err));
+  }
+
+  async function forgotPasswordSubmit() {
+    Auth.forgotPasswordSubmit(
+      username,
+      forgottenPasswordCode,
+      newForgottenPassword,
+    )
+      .then(data => console.log(data))
+      .catch(err => console.log(err));
+  }
+
+  async function verifyCurrentUser(attr) {
+    Auth.verifyCurrentUserAttribute(attr)
+      .then(() => {
+        console.log('attribute verification code has been sent');
+      })
+      .catch(e => {
+        console.log('failed with error: ', e);
+      });
+  }
+
+  async function verifyCurrentUserSubmit(attr) {
+    Auth.verifyCurrentUserAttributeSubmit(attr, verificationCode)
+      .then(() => {
+        console.log(`${attr} verified`);
+      })
+      .catch(e => {
+        console.log('failed with error: ', e);
+      });
+  }
+
+  async function retrieveCurrentUser() {
+    Auth.currentAuthenticatedUser({bypassCache: true})
+      .then(user => {
+        console.log(user);
+        setStoredUser(user);
+        setUserAttributes(user.attributes);
+      })
+      .catch(err => console.log(err));
+  }
+
+  async function refreshSession() {
+    Auth.currentSession()
+      .then(data => console.log(data))
+      .catch(err => console.log(err));
+  }
+
+  async function updateUserAttributes() {
+    let result = await Auth.updateUserAttributes(storedUser, {
+      email: newEmail,
+      'custom:favorite_flavor': favoriteFlavor || 'chocolate',
+    });
+    console.log(result);
+    retrieveCurrentUser();
+  }
+
+  async function deleteUserAttributes() {
+    let result = await Auth.deleteUserAttributes(storedUser, [
+      'custom:favorite_flavor',
+    ]);
+    console.log(result);
+    retrieveCurrentUser();
+  }
+
+  async function confirmAttributeCode() {
+    let result = await Auth.verifyCurrentUserAttributeSubmit(
+      'email',
+      attributeUpdateCode,
+    );
+    console.log(result);
   }
 
   return (
@@ -199,7 +429,6 @@ const App: () => Node = () => {
               onChangeText={setCode}
               value={code}
               placeholder="Confirmation Code"
-              autoCapitalize="none"
             />
             <Button onPress={confirmSignUp} title="Confirm Sign Up" />
             <Button
@@ -209,11 +438,140 @@ const App: () => Node = () => {
           </Section>
           <Section title="Sign In/Out">
             <Text style={styles.sectionDescription}>
-              {storedUser ? 'Signed In' : 'Signed Out'}
+              {storedUser ? `Signed In: ${storedUser.username}` : 'Signed Out'}
             </Text>
             <Button onPress={signIn} title="Sign In" />
             <Button onPress={signOut} title="Sign Out" />
             <Button onPress={globalSignOut} title="Global Sign Out" />
+          </Section>
+          <Section title="MFA">
+            <Text>{totpCode}</Text>
+            <Button onPress={setupTOTP} title="Request TOTP Code" />
+            <TextInput
+              style={styles.input}
+              onChangeText={setChallengeAnswer}
+              value={challengeAnswer}
+              placeholder="TOTP Challenge Answer"
+            />
+            <Button onPress={verifyTOTP} title="Verify TOTP" />
+            <Button onPress={setPreferredTOTP} title="Set Preferred to TOTP" />
+            <Button onPress={setPreferredSMS} title="Set Preferred to SMS" />
+            <Button
+              onPress={setPreferredNoMFA}
+              title="Set Preferred to No MFA"
+            />
+            <Text>Preferred MFA: {preferredMFA || ''}</Text>
+            <Button onPress={getPreferred} title="Get Preferred MFA" />
+            <Text>Challenge Name: {challengeName}</Text>
+            <TextInput
+              style={styles.input}
+              onChangeText={setTotpChallengeAnswer}
+              value={totpChallengeAnswer}
+              placeholder="TOTP Challenge Answer"
+            />
+            <TextInput
+              style={styles.input}
+              onChangeText={setNewPassword}
+              value={newPassword}
+              placeholder="New Password"
+            />
+            <Button onPress={signIn} title="Sign In with Challenge Answers" />
+            <TextInput
+              style={styles.input}
+              onChangeText={setValidationData}
+              value={validationData}
+              placeholder="Validation Data"
+            />
+            <Button
+              onPress={customValidationData}
+              title="Sign In with Custom Validation Data"
+            />
+          </Section>
+          <Section title={'Password & User Management'}>
+            <TextInput
+              style={styles.input}
+              onChangeText={setNewPassword}
+              value={newPassword}
+              placeholder="New Password"
+            />
+            <Button onPress={changePassword} title="Change Password" />
+            <Text>Forgot Password</Text>
+            <Button
+              onPress={forgotPassword}
+              title="Send Forgot Password Email"
+            />
+            <TextInput
+              style={styles.input}
+              onChangeText={setForgottenPasswordCode}
+              value={forgottenPasswordCode}
+              placeholder="Password Code"
+            />
+            <TextInput
+              style={styles.input}
+              onChangeText={setNewForgottenPassword}
+              value={newForgottenPassword}
+              placeholder="Forgotten Password Code"
+            />
+            <Button
+              onPress={forgotPasswordSubmit}
+              title="Reset with New Password"
+            />
+            <Text>Verify User</Text>
+            <Button
+              onPress={() => verifyCurrentUser('phone_number')}
+              title="Send Phone Verification"
+            />
+            <Button
+              onPress={() => verifyCurrentUser('email')}
+              title="Send Email Verification"
+            />
+            <TextInput
+              style={styles.input}
+              onChangeText={setVerificationCode}
+              value={verificationCode}
+              placeholder="Verification Code"
+            />
+            <Button
+              onPress={() => verifyCurrentUserSubmit('phone_number')}
+              title="Verify User Phone"
+            />
+            <Button
+              onPress={() => verifyCurrentUserSubmit('email')}
+              title="Verify User Email"
+            />
+            <Button onPress={retrieveCurrentUser} title="Retrieve User" />
+            <Text>User: {storedUser && storedUser.username}</Text>
+            <Text>Attributes: {JSON.stringify(userAttributes, null, 2)}</Text>
+            <Button onPress={refreshSession} title="Refresh Session" />
+            <TextInput
+              style={styles.input}
+              onChangeText={setFavoriteFlavor}
+              value={favoriteFlavor}
+              placeholder="Favorite Flavor"
+            />
+            <Button
+              onPress={updateUserAttributes}
+              title="Update User Attributes"
+            />
+            <Button
+              onPress={deleteUserAttributes}
+              title="Delete User Attributes"
+            />
+            <Text>Change Email for User</Text>
+            <TextInput
+              style={styles.input}
+              onChangeText={setNewEmail}
+              value={newEmail}
+              placeholder="New Email"
+            />
+            <Button onPress={updateUserAttributes} title="Update Email" />
+            <TextInput
+              style={styles.input}
+              onChangeText={setAttributeUpdateCode}
+              value={attributeUpdateCode}
+              placeholder="Attribute Update Code"
+            />
+            <Button onPress={confirmAttributeCode} title="Confirm Code" />
           </Section>
         </View>
       </ScrollView>
