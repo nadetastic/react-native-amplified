@@ -367,7 +367,7 @@ const App: () => Node = () => {
 
   async function updateUserAttributes() {
     let result = await Auth.updateUserAttributes(storedUser, {
-      email: newEmail,
+      email: newEmail || storedUser.attributes.email,
       'custom:favorite_flavor': favoriteFlavor || 'chocolate',
     });
     console.log(result);
