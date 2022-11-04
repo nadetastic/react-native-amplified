@@ -22,7 +22,6 @@ import {
 
 import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
-import QRCode from 'react-native-qrcode-svg';
 import {Auth, Hub} from 'aws-amplify';
 
 /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
@@ -79,6 +78,7 @@ const App: () => Node = () => {
   const [favoriteFlavor, setFavoriteFlavor] = useState();
   const [newEmail, setNewEmail] = useState();
   const [attributeUpdateCode, setAttributeUpdateCode] = useState();
+  const [customState, setCustomState] = useState();
 
   async function signUp() {
     console.log(username);
@@ -109,16 +109,28 @@ const App: () => Node = () => {
   // Sign up, Sign in & Sign out
   function listenToAutoSignInEvent() {
     Hub.listen('auth', ({payload}) => {
-      const {event} = payload;
+      const {event, data} = payload;
       console.log('event: ', event);
-      if (event === 'autoSignIn') {
-        const user = payload.data;
-        // assign user
-        console.log(user);
-        setStoredUser(user);
-      } else if (event === 'autoSignIn_failure') {
-        // redirect to sign in page
-        console.log('auto sign in failed');
+      switch (event) {
+        case 'autoSignIn':
+        case 'signIn':
+          // assign user
+          console.log(data);
+          setStoredUser(data);
+          break;
+        case 'autoSignIn_failure':
+          // redirect to sign in page
+          console.log('auto sign in failed');
+          break;
+        case 'signOut':
+          setStoredUser(null);
+          break;
+        case 'customOAuthState':
+          setCustomState(data);
+          break;
+        case 'parsingCallbackUrl':
+          console.log(payload);
+          break;
       }
     });
   }
@@ -202,9 +214,6 @@ const App: () => Node = () => {
       console.log('error signing out globally: ', error);
     }
   }
-
-  // Social Sign-in (OAuth)
-  // TODO: Add social sign in
 
   // Multi-factor authentication
   async function setupTOTP(user = null) {
@@ -455,6 +464,20 @@ const App: () => Node = () => {
             <Button onPress={signIn} title="Sign In" />
             <Button onPress={signOut} title="Sign Out" />
             <Button onPress={globalSignOut} title="Global Sign Out" />
+          </Section>
+          <Section title="Social Sign In">
+            <Button
+              onPress={() => Auth.federatedSignIn()}
+              title="Open Hosted UI"
+            />
+            <Button
+              onPress={() => Auth.federatedSignIn({provider: 'Google'})}
+              title="Open Google"
+            />
+            <Button
+              onPress={() => Auth.federatedSignIn({provider: 'Facebook'})}
+              title="Open Facebook"
+            />
           </Section>
           <Section title="MFA">
             <Text>{totpCode}</Text>
