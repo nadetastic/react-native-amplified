@@ -399,6 +399,34 @@ const App: () => Node = () => {
     }
   }
 
+  // Device Memory
+  async function rememberDevice() {
+    try {
+      const result = await Auth.rememberDevice();
+      console.log('Remembered device ', result);
+    } catch (error) {
+      console.log('Error remembering device', error);
+    }
+  }
+
+  async function forgetDevice() {
+    try {
+      const result = await Auth.forgetDevice();
+      console.log('Forgot device ', result);
+    } catch (error) {
+      console.log('Error forgetting device', error);
+    }
+  }
+
+  async function fetchDevices() {
+    try {
+      const result = await Auth.fetchDevices();
+      console.log('Devices: ', result);
+    } catch (err) {
+      console.log('Error fetching devices', err);
+    }
+  }
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
@@ -608,6 +636,11 @@ const App: () => Node = () => {
             />
             <Button onPress={confirmAttributeCode} title="Confirm Code" />
             <Button onPress={deleteUser} title="Delete Current User" />
+          </Section>
+          <Section title="Device Memory">
+            <Button onPress={rememberDevice} title="Remember Device" />
+            <Button onPress={forgetDevice} title="Forget Device" />
+            <Button onPress={fetchDevices} title="Fetch Devices" />
           </Section>
         </View>
       </ScrollView>
