@@ -22,7 +22,9 @@ import {
 
 import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
-import {Auth, Hub} from 'aws-amplify';
+import {Amplify, Auth, Hub} from 'aws-amplify';
+
+Amplify.Logger.LOG_LEVEL = 'DEBUG';
 
 /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
  * LTI update could not be added via codemod */
@@ -52,7 +54,7 @@ const App: () => Node = () => {
   };
 
   useEffect(() => {
-    listenToAutoSignInEvent();
+    listenToHub();
     Auth.currentAuthenticatedUser()
       .then(user => setStoredUser(user))
       .catch(err => console.log(err));
@@ -82,6 +84,7 @@ const App: () => Node = () => {
 
   async function signUp() {
     console.log(username);
+    console.log(typeof username);
     console.log(password);
     console.log(email);
     console.log(phone_number);
@@ -107,11 +110,15 @@ const App: () => Node = () => {
   }
 
   // Sign up, Sign in & Sign out
-  function listenToAutoSignInEvent() {
+  function listenToHub() {
     Hub.listen('auth', ({payload}) => {
       const {event, data} = payload;
       console.log('event: ', event);
       switch (event) {
+        case 'signUp':
+          console.log('sign up');
+          console.log(data);
+          break;
         case 'autoSignIn':
         case 'signIn':
           // assign user
