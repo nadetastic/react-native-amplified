@@ -26,5 +26,18 @@
         ]
       }
     }
+  },
+  "storage": {
+    "s31edbd094": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": []
+    }
+  },
+  "analytics": {
+    "rncliv5new": {
+      "service": "Pinpoint",
+      "providerPlugin": "awscloudformation"
+    }
   }
 }

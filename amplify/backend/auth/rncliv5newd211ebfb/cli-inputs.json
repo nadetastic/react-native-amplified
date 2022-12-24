@@ -2,7 +2,7 @@
   "version": "1",
   "cognitoConfig": {
     "identityPoolName": "rncliv5newd211ebfb_identitypool_d211ebfb",
-    "allowUnauthenticatedIdentities": false,
+    "allowUnauthenticatedIdentities": true,
     "resourceNameTruncated": "rnclivd211ebfb",
     "userPoolName": "rncliv5newd211ebfb_userpool_d211ebfb",
     "autoVerifiedAttributes": [
@@ -62,7 +62,6 @@
     ],
     "hostedUIProviderMeta": "[{\"ProviderName\":\"Google\",\"authorize_scopes\":\"openid email profile\",\"AttributeMapping\":{\"email\":\"email\",\"username\":\"sub\"}}]",
     "authProviders": [],
-    "hostedUIProviderCreds": "[]",
     "oAuthMetadata": "{\"AllowedOAuthFlows\":[\"code\"],\"AllowedOAuthScopes\":[\"phone\",\"email\",\"openid\",\"profile\",\"aws.cognito.signin.user.admin\"],\"CallbackURLs\":[\"http://localhost:3000/\",\"myapp://\",\"exp://127.0.0.1:19000/--/\"],\"LogoutURLs\":[\"http://localhost:3000/\",\"myapp://\",\"exp://127.0.0.1:19000/--/\"]}"
   }
 }

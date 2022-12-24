@@ -7,7 +7,6 @@
  */
 
 import React, {useState, useEffect} from 'react';
-import type {Node} from 'react';
 import {
   Button,
   SafeAreaView,
@@ -22,13 +21,13 @@ import {
 
 import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
-import {Amplify, Auth, Hub} from 'aws-amplify';
+import {Amplify, Auth, Hub, Storage, Analytics} from 'aws-amplify';
 
 Amplify.Logger.LOG_LEVEL = 'DEBUG';
 
 /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
  * LTI update could not be added via codemod */
-const Section = ({children, title}): Node => {
+const Section = ({children, title}) => {
   const isDarkMode = useColorScheme() === 'dark';
   return (
     <View style={styles.sectionContainer}>
@@ -46,7 +45,7 @@ const Section = ({children, title}): Node => {
   );
 };
 
-const App: () => Node = () => {
+const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -236,6 +235,7 @@ const App: () => Node = () => {
   }
 
   async function verifyTOTP() {
+    console.log('challengename', storedUser);
     Auth.verifyTotpToken(storedUser, challengeAnswer)
       .then(() => {
         // don't forget to set TOTP as the preferred MFA method
@@ -362,6 +362,18 @@ const App: () => Node = () => {
         console.log(user);
         setStoredUser(user);
         setUserAttributes(user.attributes);
+
+        // analytics
+        Analytics.record({
+          name: 'userRetrieved',
+          // attributes must be strings
+          attributes: {
+            username: storedUser.username,
+            email: storedUser.attributes.email,
+          },
+          // metrics must be numbers (int or float)
+          metrics: {app: 1},
+        });
       })
       .catch(err => console.log(err));
   }
@@ -376,6 +388,7 @@ const App: () => Node = () => {
     let result = await Auth.updateUserAttributes(storedUser, {
       email: newEmail || storedUser.attributes.email,
       'custom:favorite_flavor': favoriteFlavor || 'chocolate',
+      phone_number: '+11234567890',
     });
     console.log(result);
     retrieveCurrentUser();
@@ -432,6 +445,17 @@ const App: () => Node = () => {
     } catch (err) {
       console.log('Error fetching devices', err);
     }
+  }
+
+  async function smokeTest() {
+    var c1 = await Auth.currentCredentials();
+    var c2 = await Auth.currentUserCredentials();
+    console.log('c1', c1);
+    console.log('c2', c2);
+
+    Storage.list('')
+      .then(result => console.log(result))
+      .catch(err => console.log(err));
   }
 
   return (
@@ -513,6 +537,7 @@ const App: () => Node = () => {
               onPress={() => Auth.federatedSignIn({provider: 'Facebook'})}
               title="Open Facebook"
             />
+            <Button onPress={smokeTest} title="Smoke Test" />
           </Section>
           <Section title="MFA">
             <Text>{totpCode}</Text>

@@ -1,0 +1,21 @@
+{
+    "appName": "rncliv5new",
+    "roleName": "pinpointLambdaRole7d2d1419",
+    "cloudformationPolicyName": "cloudformationPolicy7d2d1419",
+    "cloudWatchPolicyName": "cloudWatchPolicy7d2d1419",
+    "pinpointPolicyName": "pinpointPolicy7d2d1419",
+    "authPolicyName": "pinpoint_amplify_7d2d1419",
+    "unauthPolicyName": "pinpoint_amplify_7d2d1419",
+    "authRoleName": {
+        "Ref": "AuthRoleName"
+    },
+    "unauthRoleName": {
+        "Ref": "UnauthRoleName"
+    },
+    "authRoleArn": {
+        "Fn::GetAtt": [
+            "AuthRole",
+            "Arn"
+        ]
+    }
+}
