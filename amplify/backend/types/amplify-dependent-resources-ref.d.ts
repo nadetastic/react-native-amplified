@@ -23,6 +23,11 @@ export type AmplifyDependentResourcesAttributes = {
             "Region": "string",
             "Id": "string",
             "appName": "string"
+        },
+        "rncliv5newKinesis": {
+            "kinesisStreamArn": "string",
+            "kinesisStreamId": "string",
+            "kinesisStreamShardCount": "string"
         }
     }
 }

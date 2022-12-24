@@ -38,6 +38,10 @@
     "rncliv5new": {
       "service": "Pinpoint",
       "providerPlugin": "awscloudformation"
+    },
+    "rncliv5newKinesis": {
+      "service": "Kinesis",
+      "providerPlugin": "awscloudformation"
     }
   }
 }

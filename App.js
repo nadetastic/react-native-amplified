@@ -23,8 +23,6 @@ import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
 import {Amplify, Auth, Hub, Storage, Analytics} from 'aws-amplify';
 
-Amplify.Logger.LOG_LEVEL = 'DEBUG';
-
 /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
  * LTI update could not be added via codemod */
 const Section = ({children, title}) => {
@@ -52,6 +50,7 @@ const App = () => {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  // auth
   useEffect(() => {
     listenToHub();
     Auth.currentAuthenticatedUser()
@@ -173,6 +172,7 @@ const App = () => {
         );
         console.log(loggedUser);
         setStoredUser(loggedUser);
+        recordPersonalizeIdentifyEvent(loggedUser);
       } else if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
         const {requiredAttributes} = user.challengeParam; // the array of required attributes, e.g ['email', 'phone_number']
         // You need to get the new password and required attributes from the UI inputs
@@ -358,22 +358,10 @@ const App = () => {
 
   async function retrieveCurrentUser() {
     Auth.currentAuthenticatedUser({bypassCache: true})
-      .then(user => {
+      .then(async user => {
         console.log(user);
         setStoredUser(user);
         setUserAttributes(user.attributes);
-
-        // analytics
-        Analytics.record({
-          name: 'userRetrieved',
-          // attributes must be strings
-          attributes: {
-            username: storedUser.username,
-            email: storedUser.attributes.email,
-          },
-          // metrics must be numbers (int or float)
-          metrics: {app: 1},
-        });
       })
       .catch(err => console.log(err));
   }
@@ -447,6 +435,7 @@ const App = () => {
     }
   }
 
+  // smoke test
   async function smokeTest() {
     var c1 = await Auth.currentCredentials();
     var c2 = await Auth.currentUserCredentials();
@@ -456,6 +445,93 @@ const App = () => {
     Storage.list('')
       .then(result => console.log(result))
       .catch(err => console.log(err));
+  }
+
+  // analytics
+  const analyticsData = {
+    username: storedUser ? storedUser.username : 'no user',
+    email: storedUser ? storedUser.attributes.email : 'no email',
+    action: 'userRetrieved',
+  };
+
+  // pinpoint
+  async function recordPinpointEvent() {
+    await Analytics.record({
+      name: 'pinpointUser',
+      // attributes must be strings
+      attributes: analyticsData,
+      // metrics must be numbers (int or float)
+      metrics: {app: 1},
+    });
+  }
+
+  // kinesis
+  async function recordKinesisEvent() {
+    await Analytics.record(
+      {
+        data: analyticsData,
+        // OPTIONAL
+        partitionKey: 'myPartitionKey',
+        streamName: 'rncliv5newKinesis-dev',
+      },
+      'AWSKinesis',
+    );
+  }
+
+  // kinesis firehose
+  // not working correctly
+  async function recordFirehoseEvent() {
+    await Analytics.record(
+      {
+        data: analyticsData,
+        streamName: 'KDS-S3-SeN4i', // required
+      },
+      'AWSKinesisFirehose',
+    );
+  }
+
+  // personalization identify
+  async function recordPersonalizeIdentifyEvent(user) {
+    await Analytics.record(
+      {
+        eventType: 'Identify',
+        properties: {
+          userId: user.username,
+        },
+      },
+      'AmazonPersonalize',
+    );
+  }
+
+  // personalization event
+  async function recordPersonalizeEvent() {
+    console.log({storedUser});
+    await Analytics.record(
+      {
+        eventType: 'ButtonPress',
+        // userId: storedUser.username, // optional, needed if not capturing in Identify
+        properties: {
+          itemId: 'standalonePersonalizeButton',
+          eventValue: 'pressedButton',
+        },
+      },
+      'AmazonPersonalize',
+    );
+  }
+
+  // personalization media
+  async function recordPersonalizeMediaEvent() {
+    await Analytics.record(
+      {
+        eventType: 'MediaAutoTrack',
+        // userId: storedUser.username, // optional, needed if not capturing in Identify
+        properties: {
+          domElementId: 'MEDIA DOM ELEMENT ID',
+          itemId: 'MEDIA ITEM ID',
+        },
+      },
+      'AmazonPersonalize',
+    );
   }
 
   return (
@@ -673,6 +749,25 @@ const App = () => {
             <Button onPress={rememberDevice} title="Remember Device" />
             <Button onPress={forgetDevice} title="Forget Device" />
             <Button onPress={fetchDevices} title="Fetch Devices" />
+          </Section>
+          <Section title="Analytics">
+            <Button
+              onPress={recordPinpointEvent}
+              title="Record Pinpoint Event"
+            />
+            <Button onPress={recordKinesisEvent} title="Record Kinesis Event" />
+            <Button
+              onPress={recordFirehoseEvent}
+              title="Record Firehose Event"
+            />
+            <Button
+              onPress={recordPersonalizeEvent}
+              title="Record Personalize Event"
+            />
+            <Button
+              onPress={recordPersonalizeMediaEvent}
+              title="Record Media Event"
+            />
           </Section>
         </View>
       </ScrollView>

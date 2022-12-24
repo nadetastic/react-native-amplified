@@ -91,6 +91,21 @@
     universal-cookie "^4.0.4"
     zen-observable-ts "0.8.19"
 
+"@aws-amplify/core@5.0.7":
+  version "5.0.7"
+  resolved "https://registry.yarnpkg.com/@aws-amplify/core/-/core-5.0.7.tgz#311b955e1143d67fa5bdad3f0ae2cf57998975a4"
+  integrity sha512-Y4Wryidok42O5U6OiE/xi18EwkshI523SneBdpjszj4Cs+Mn4vZIKfnSRuTxvAt7PcZ2K4fMQ/uahigB3HkKhA==
+  dependencies:
+    "@aws-crypto/sha256-js" "1.2.2"
+    "@aws-sdk/client-cloudwatch-logs" "3.6.1"
+    "@aws-sdk/client-cognito-identity" "3.6.1"
+    "@aws-sdk/credential-provider-cognito-identity" "3.6.1"
+    "@aws-sdk/types" "3.6.1"
+    "@aws-sdk/util-hex-encoding" "3.6.1"
+    tslib "^1.8.0"
+    universal-cookie "^4.0.4"
+    zen-observable-ts "0.8.19"
+
 "@aws-amplify/datastore@4.0.6-unstable-main.6+24978b431":
   version "4.0.6-unstable-main.6"
   resolved "https://registry.yarnpkg.com/@aws-amplify/datastore/-/datastore-4.0.6-unstable-main.6.tgz#579c417c33b6e9ec88b042eebbbeb5ab2bd98782"
@@ -173,6 +188,14 @@
     tslib "^1.8.0"
     uuid "^3.2.1"
     zen-observable-ts "0.8.19"
+
+"@aws-amplify/pushnotification@^5.0.7":
+  version "5.0.7"
+  resolved "https://registry.yarnpkg.com/@aws-amplify/pushnotification/-/pushnotification-5.0.7.tgz#2f6340773c846eaa98697585ada8a7bc6569863d"
+  integrity sha512-uas/TadZd9Yex4Qfw8J/R7VGTeLOHC9Q1iWJzJrgqLTvYyq/S4parSd78d1CizHkQCPTPbNCu6ZHJ2PViL478Q==
+  dependencies:
+    "@aws-amplify/core" "5.0.7"
+    "@react-native-community/push-notification-ios" "1.0.3"
 
 "@aws-amplify/storage@5.0.6-unstable-main.6+24978b431":
   version "5.0.6-unstable-main.6"
@@ -3436,6 +3459,20 @@
   version "9.3.7"
   resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-9.3.7.tgz#92407f679f00bae005c785a9284e61d63e292b34"
   integrity sha512-+taWmE5WpBp0uS6kf+bouCx/sn89G9EpR4s2M/ReLvctVIFL2Qh8WnWfBxqK9qwgmFha/uqjSr2Gq03OOtiDcw==
+
+"@react-native-community/push-notification-ios@1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@react-native-community/push-notification-ios/-/push-notification-ios-1.0.3.tgz#cd2c7f29aeeb431942eda0bd729738fd2b444ae9"
+  integrity sha512-f+Y3lFLt5OBWHDtGHE+PiZH4aLeS8w2D47c0G/S5XpzeGoEeggOiALtou/r6raiVLP+D5CrLkIBMs2U2+LGJhw==
+  dependencies:
+    invariant "^2.2.4"
+
+"@react-native-community/push-notification-ios@^1.10.1":
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/@react-native-community/push-notification-ios/-/push-notification-ios-1.10.1.tgz#d52a6d69ac1112df0f79e1d17978077629b76784"
+  integrity sha512-k6bZWUKLif4GjenyTD3aQLwA2VT3bNmt22INO/34lexnpmqkPDZF7nreqbckTHG0Zso9wDTe4N/AZJUC/d8iRg==
+  dependencies:
+    invariant "^2.2.4"
 
 "@react-native/assets@1.0.0":
   version "1.0.0"

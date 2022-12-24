@@ -1,0 +1,12 @@
+{
+  "kinesisStreamName": "rncliv5newKinesis",
+  "kinesisStreamShardCount": 1,
+  "authRoleName": {
+    "Ref": "AuthRoleName"
+  },
+  "unauthRoleName": {
+    "Ref": "UnauthRoleName"
+  },
+  "authPolicyName": "kinesis_amplify_b3ba4bca",
+  "unauthPolicyName": "kinesis_amplify_b3ba4bca"
+}
