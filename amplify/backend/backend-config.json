@@ -43,5 +43,13 @@
       "service": "Kinesis",
       "providerPlugin": "awscloudformation"
     }
+  },
+  "notifications": {
+    "rncliv5new": {
+      "service": "Pinpoint",
+      "channels": [
+        "APNS"
+      ]
+    }
   }
 }

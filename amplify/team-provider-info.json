@@ -20,7 +20,12 @@
       },
       "analytics": {
         "rncliv5new": {},
-        "rncliv5newKinesis": {}
+        "rncliv5newKinesis": {},
+        "Pinpoint": {
+          "Name": "rncliv5new-dev",
+          "Id": "b1d059dda10944a0b281222c06a5b005",
+          "Region": "us-east-1"
+        }
       }
     }
   }

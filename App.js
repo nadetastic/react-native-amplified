@@ -21,7 +21,8 @@ import {
 
 import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
-import {Amplify, Auth, Hub, Storage, Analytics} from 'aws-amplify';
+import {Auth, Hub, Storage, Analytics, PushNotification} from 'aws-amplify';
+import PushNotificationIOS from '@react-native-community/push-notification-ios';
 
 /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
  * LTI update could not be added via codemod */
@@ -801,3 +802,23 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+
+// get the notification data when notification is received
+PushNotification.onNotification(notification => {
+  // Note that the notification object structure is different from Android and IOS
+  console.log('in app notification', notification);
+
+  // required on iOS only (see fetchCompletionHandler docs: https://github.com/react-native-community/push-notification-ios#finish)
+  notification.finish(PushNotificationIOS.FetchResult.NoData);
+});
+
+// get the registration token
+// This will only be triggered when the token is generated or updated.
+PushNotification.onRegister(token => {
+  console.log('in app registration', token);
+});
+
+// get the notification data when notification is opened
+PushNotification.onNotificationOpened(notification => {
+  console.log('the notification is opened', notification);
+});
