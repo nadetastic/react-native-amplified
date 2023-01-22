@@ -19,9 +19,10 @@ import {
   View,
 } from 'react-native';
 
-import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
-import {Auth, Hub, Storage, Analytics, PushNotification} from 'aws-amplify';
+import {Auth, Hub, Storage, Analytics} from 'aws-amplify';
+import {PushNotification} from '@aws-amplify/pushnotification';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
 
 /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
@@ -137,6 +138,72 @@ const App = () => {
         case 'parsingCallbackUrl':
           console.log(payload);
           break;
+        case 'configured':
+          console.log('the Auth module is configured');
+          break;
+        case 'signIn':
+          console.log('user signed in');
+          break;
+        case 'signIn_failure':
+          console.error('user sign in failed');
+          break;
+        case 'signUp':
+          console.log('user signed up');
+          break;
+        case 'signUp_failure':
+          console.error('user sign up failed');
+          break;
+        case 'confirmSignUp':
+          console.log('user confirmation successful');
+          break;
+        case 'completeNewPassword_failure':
+          console.error('user did not complete new password flow');
+          break;
+        case 'autoSignIn':
+          console.log('auto sign in successful');
+          break;
+        case 'autoSignIn_failure':
+          console.error('auto sign in failed');
+          break;
+        case 'forgotPassword':
+          console.log('password recovery initiated');
+          break;
+        case 'forgotPassword_failure':
+          console.error('password recovery failed');
+          break;
+        case 'forgotPasswordSubmit':
+          console.log('password confirmation successful');
+          break;
+        case 'forgotPasswordSubmit_failure':
+          console.error('password confirmation failed');
+          break;
+        case 'tokenRefresh':
+          console.log('token refresh succeeded');
+          break;
+        case 'tokenRefresh_failure':
+          console.error('token refresh failed');
+          break;
+        case 'cognitoHostedUI':
+          console.log('Cognito Hosted UI sign in successful');
+          break;
+        case 'cognitoHostedUI_failure':
+          console.error('Cognito Hosted UI sign in failed');
+          break;
+        case 'customOAuthState':
+          console.log('custom state returned from CognitoHosted UI');
+          break;
+        case 'customState_failure':
+          console.error('custom state failure');
+          break;
+        case 'parsingCallbackUrl':
+          console.log('Cognito Hosted UI OAuth url parsing initiated');
+          break;
+        case 'userDeleted':
+          console.log('user deletion successful');
+          break;
+        case 'signOut':
+          console.log('user signed out');
+          break;
       }
     });
   }
@@ -176,6 +243,7 @@ const App = () => {
         recordPersonalizeIdentifyEvent(loggedUser);
       } else if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
         const {requiredAttributes} = user.challengeParam; // the array of required attributes, e.g ['email', 'phone_number']
+        console.log({requiredAttributes});
         // You need to get the new password and required attributes from the UI inputs
         // and then trigger the following function with a button click
         // For example, the email and phone_number are required attributes
@@ -451,7 +519,7 @@ const App = () => {
   // analytics
   const analyticsData = {
     username: storedUser ? storedUser.username : 'no user',
-    email: storedUser ? storedUser.attributes.email : 'no email',
+    email: storedUser?.attributes ? storedUser.attributes.email : 'no email',
     action: 'userRetrieved',
   };
 

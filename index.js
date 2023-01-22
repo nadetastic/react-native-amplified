@@ -73,7 +73,7 @@ Analytics.configure({
     resendLimit: 5,
   },
   AmazonPersonalize: {
-    trackingIdd: '436aebd5-0a4a-4fcc-be29-c31cef508511',
+    trackingId: '436aebd5-0a4a-4fcc-be29-c31cef508511',
     region: 'us-east-1',
     flushSize: 10,
     flushInterval: 5000,
