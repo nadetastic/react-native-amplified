@@ -51,5 +51,17 @@
         "APNS"
       ]
     }
+  },
+  "interactions": {
+    "lex629eb5f0": {
+      "service": "Lex",
+      "providerPlugin": "awscloudformation",
+      "build": true
+    },
+    "lexc64d08ea": {
+      "service": "Lex",
+      "providerPlugin": "awscloudformation",
+      "build": true
+    }
   }
 }

@@ -26,6 +26,16 @@
           "Id": "b1d059dda10944a0b281222c06a5b005",
           "Region": "us-east-1"
         }
+      },
+      "interactions": {
+        "lex629eb5f0": {
+          "deploymentBucketName": "amplify-rncliv5new-dev-150233-deployment",
+          "s3Key": "amplify-builds/lex629eb5f0-376e4535757157776144-build.zip"
+        },
+        "lexc64d08ea": {
+          "deploymentBucketName": "amplify-rncliv5new-dev-150233-deployment",
+          "s3Key": "amplify-builds/lexc64d08ea-46366d51507851487073-build.zip"
+        }
       }
     }
   }

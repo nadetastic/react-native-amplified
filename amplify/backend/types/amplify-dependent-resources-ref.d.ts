@@ -29,5 +29,17 @@ export type AmplifyDependentResourcesAttributes = {
             "kinesisStreamId": "string",
             "kinesisStreamShardCount": "string"
         }
+    },
+    "interactions": {
+        "lex629eb5f0": {
+            "Region": "string",
+            "BotName": "string",
+            "FunctionArn": "string"
+        },
+        "lexc64d08ea": {
+            "Region": "string",
+            "BotName": "string",
+            "FunctionArn": "string"
+        }
     }
 }

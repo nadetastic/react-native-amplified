@@ -21,9 +21,12 @@ import {
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
-import {Auth, Hub, Storage, Analytics} from 'aws-amplify';
+import {Analytics, Auth, Cache, Hub, Interactions, Storage} from 'aws-amplify';
 import {PushNotification} from '@aws-amplify/pushnotification';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
+
+import awsmobile from './src/aws-exports';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
  * LTI update could not be added via codemod */
@@ -506,7 +509,11 @@ const App = () => {
 
   // smoke test
   async function smokeTest() {
+    // returns AWS Credentials of type <ICredentials>
+    // does not refresh secretAccessKey and sessionToken
     var c1 = await Auth.currentCredentials();
+    // returns AWS Credentials of type <ICredentials>
+    // refreshes secretAccessKey and sessionToken
     var c2 = await Auth.currentUserCredentials();
     console.log('c1', c1);
     console.log('c2', c2);
@@ -514,6 +521,16 @@ const App = () => {
     Storage.list('')
       .then(result => console.log(result))
       .catch(err => console.log(err));
+
+    Analytics.record({
+      name: 'test push notification',
+      immediate: true,
+    });
+
+    Analytics.record({
+      name: 'testPushNotification',
+      immediate: true,
+    });
   }
 
   // analytics
@@ -601,6 +618,51 @@ const App = () => {
       },
       'AmazonPersonalize',
     );
+  }
+
+  // get device token from storage
+  async function getToken() {
+    const aws_mobile_analytics_app_id = awsmobile.aws_mobile_analytics_app_id;
+    const awsPushToken = await AsyncStorage.getItem(
+      'push_token' + aws_mobile_analytics_app_id,
+    );
+
+    console.log({
+      awsPushToken,
+    });
+  }
+
+  // get endpoint id from Cache
+  async function getEndpoint() {
+    !!Analytics;
+    Cache.getAllKeys().then(keys => console.log({keys}));
+    Cache.getItem('AWSPinpoint_b1d059dda10944a0b281222c06a5b005').then(id => {
+      console.log(`endpoint id: ${id}`);
+    });
+  }
+
+  // interactions/chatbot
+  async function chatbot() {
+    let userInput = 'I want to reserve a hotel for tonight';
+
+    // Provide a bot name and user input
+    const response = await Interactions.send('BookTrip_dev', userInput);
+
+    // Log chatbot response
+    console.log(response.message);
+
+    // end session
+    Interactions.onComplete('BookTrip', handleInteractionsComplete);
+  }
+
+  async function handleInteractionsComplete (err, confirmationCode) {
+    if (err) {
+      console.log('bot conversation failed', err);
+      return;
+    }
+    console.log('done: ', JSON.stringify(confirmationCode, null, 2));
+
+    return 'Trip booked. Thank you! what would you like to do next?';
   }
 
   return (
@@ -838,6 +900,13 @@ const App = () => {
               title="Record Media Event"
             />
           </Section>
+          <Section title="Push Notification/Device Token">
+            <Button onPress={getToken} title="Get Device Token" />
+            <Button onPress={getEndpoint} title="Get Endpoint" />
+          </Section>
+          <Section title="Interactions">
+            <Button onPress={chatbot} title="Chatbot" />
+          </Section>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -877,13 +946,15 @@ PushNotification.onNotification(notification => {
   console.log('in app notification', notification);
 
   // required on iOS only (see fetchCompletionHandler docs: https://github.com/react-native-community/push-notification-ios#finish)
-  notification.finish(PushNotificationIOS.FetchResult.NoData);
+  // notification.finish(PushNotificationIOS.FetchResult.NoData);
 });
 
 // get the registration token
 // This will only be triggered when the token is generated or updated.
 PushNotification.onRegister(token => {
   console.log('in app registration', token);
+
+  PushNotification.updateEndpoint(token);
 });
 
 // get the notification data when notification is opened
