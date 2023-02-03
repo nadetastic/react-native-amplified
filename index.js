@@ -1,6 +1,8 @@
 /**
  * @format
  */
+import 'react-native-get-random-values';
+import 'react-native-url-polyfill/auto';
 
 import {AppRegistry} from 'react-native';
 import App from './App';
@@ -14,9 +16,11 @@ import {
   AmazonPersonalizeProvider,
 } from 'aws-amplify';
 // import {MyAnalyticsProvider} from './src/types/MyAnalyticsProvider';
+// import {AWSLexV2Provider} from '@aws-amplify/interactions';
 import awsconfig from './src/aws-exports';
 
 // Amplify.Logger.LOG_LEVEL = 'DEBUG';
+// Amplify.addPluggable(new AWSLexV2Provider());
 
 const isLocalhost = false;
 
@@ -38,6 +42,19 @@ const updatedAwsConfig = {
       ? localRedirectSignOut
       : productionRedirectSignOut,
   },
+  // Interactions: {
+  //   bots: {
+  //     // LexV2 bot
+  //     BookTrip: {
+  //       name: 'BookTrip',
+  //       aliasId: 'TSTALIASID',
+  //       botId: 'KDNGZTJKQX',
+  //       localeId: 'en_US',
+  //       region: 'us-east-1',
+  //       providerName: 'AWSLexV2Provider',
+  //     },
+  //   },
+  // },
 };
 
 Amplify.configure(updatedAwsConfig);

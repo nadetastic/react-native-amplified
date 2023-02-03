@@ -22,8 +22,8 @@ import {
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 import {Analytics, Auth, Cache, Hub, Interactions, Storage} from 'aws-amplify';
-import {PushNotification} from '@aws-amplify/pushnotification';
-import PushNotificationIOS from '@react-native-community/push-notification-ios';
+// import {PushNotification} from '@aws-amplify/pushnotification';
+// import PushNotificationIOS from '@react-native-community/push-notification-ios';
 
 import awsmobile from './src/aws-exports';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -432,6 +432,7 @@ const App = () => {
     Auth.currentAuthenticatedUser({bypassCache: true})
       .then(async user => {
         console.log(user);
+        console.log(user.signInUserSession.accessToken.payload);
         setStoredUser(user);
         setUserAttributes(user.attributes);
       })
@@ -646,16 +647,18 @@ const App = () => {
     let userInput = 'I want to reserve a hotel for tonight';
 
     // Provide a bot name and user input
-    const response = await Interactions.send('BookTrip_dev', userInput);
+    // const response = await Interactions.send('BookTrip', userInput);
+    const responseDev = await Interactions.send('BookTrip_dev', userInput);
 
     // Log chatbot response
-    console.log(response.message);
+    // console.log(response.message);
+    console.log(responseDev.message);
 
     // end session
-    Interactions.onComplete('BookTrip', handleInteractionsComplete);
+    Interactions.onComplete('BookTrip_dev', handleInteractionsComplete);
   }
 
-  async function handleInteractionsComplete (err, confirmationCode) {
+  async function handleInteractionsComplete(err, confirmationCode) {
     if (err) {
       console.log('bot conversation failed', err);
       return;
@@ -735,6 +738,10 @@ const App = () => {
             <Button
               onPress={() => Auth.federatedSignIn()}
               title="Open Hosted UI"
+            />
+            <Button
+              onPress={() => Auth.federatedSignIn({customProvider: 'AzureAD'})}
+              title="Open AzureAD"
             />
             <Button
               onPress={() => Auth.federatedSignIn({provider: 'Google'})}
@@ -941,23 +948,23 @@ const styles = StyleSheet.create({
 export default App;
 
 // get the notification data when notification is received
-PushNotification.onNotification(notification => {
-  // Note that the notification object structure is different from Android and IOS
-  console.log('in app notification', notification);
+// PushNotification.onNotification(notification => {
+//   // Note that the notification object structure is different from Android and IOS
+//   console.log('in app notification', notification);
 
-  // required on iOS only (see fetchCompletionHandler docs: https://github.com/react-native-community/push-notification-ios#finish)
-  // notification.finish(PushNotificationIOS.FetchResult.NoData);
-});
+//   // required on iOS only (see fetchCompletionHandler docs: https://github.com/react-native-community/push-notification-ios#finish)
+//   // notification.finish(PushNotificationIOS.FetchResult.NoData);
+// });
 
-// get the registration token
-// This will only be triggered when the token is generated or updated.
-PushNotification.onRegister(token => {
-  console.log('in app registration', token);
+// // get the registration token
+// // This will only be triggered when the token is generated or updated.
+// PushNotification.onRegister(token => {
+//   console.log('in app registration', token);
 
-  PushNotification.updateEndpoint(token);
-});
+//   PushNotification.updateEndpoint(token);
+// });
 
-// get the notification data when notification is opened
-PushNotification.onNotificationOpened(notification => {
-  console.log('the notification is opened', notification);
-});
+// // get the notification data when notification is opened
+// PushNotification.onNotificationOpened(notification => {
+//   console.log('the notification is opened', notification);
+// });
